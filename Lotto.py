@@ -1,13 +1,18 @@
-from random import sample
-from collections import defaultdict
+from random import sample  # выбор случайного набора
+from collections import defaultdict  # объявление словаря со значениями нужного типа
 
-from faker import Faker
+from faker import Faker  # объявление типа для фиксации случайных имен
 
 
-fake = Faker('ru-RU')
+fake = Faker('ru-RU')  # объект класса с русским набор имен
 
 
 def define_cart(new_cart):
+    """
+    Получает карту, и возвращает множество номеров из нее
+    :param new_cart: карта с номерами
+    :return: множество номеров карты
+    """
     eq = set()
     for item in new_cart:
         eq |= set(item)
@@ -16,15 +21,23 @@ def define_cart(new_cart):
 
 
 class Cart:
+    """
+    класс для карты
+    """
     def __init__(self):
         self.cart = None
         self.create()
 
     def create(self):
+        """
+        Задание содержимого карточки 15 уникальных номеров от 1 до 100
+        :return: задание свойства cart, как лист из 3 строк
+        """
         self.cart = sorted(sample(list(range(1, 100)), k=15))
         app = defaultdict(list)
         for item in self.cart:
             app[item // 10].append(item)
+        # создает словарь со значениями из трехэлементных листов из заданных цифр, а остальное добавляется символами "#"
         for i in range(10):
             if len(app[i]) > 3:
                 k = len(app[i]) - 3
@@ -42,18 +55,33 @@ class Cart:
                 k = 3 - len(app[i])
                 app[i] += ['#'] * k
         result = []
+        # превращает из словаря в список по 10 элементов
         for i in range(3):
             result.append([app[key][i] for key in range(10)])
         self.cart = result
 
     @property
     def is_empty(self):
+        """
+        Проверка на отсутствие цифр в карточке
+        :return: bool
+        """
         return len(define_cart(self.cart)) == 0
 
     def is_num_to_cart(self, num):
+        """
+        Проверка присутствия номера в карточке
+        :param num: искомый номер
+        :return: bool
+        """
         return any([item.count(num) for item in self.cart])
 
     def cross_out(self, num):
+        """
+        Замена числа в карточке на символ "-"
+        :param num: номер для поиска
+        :return: все изменения производятся в картоке
+        """
         for item in self.cart:
             try:
                 index = item.index(num)
@@ -63,6 +91,10 @@ class Cart:
                 pass
 
     def out_print(self):
+        """
+        Подготовка карточки для вывода на экран.
+        :return: стока для вывода
+        """
         s = ' ' + '_' * 30 + '\n'
         for item in self.cart:
             s += '|'
@@ -74,12 +106,23 @@ class Cart:
 
 
 class PlayerComp:
+    """
+    Класс для бота
+    """
     def __init__(self):
+        """
+        Инициализируются два свойства карта игрока и его имя - генерируется автоматически
+        """
         self.cart = Cart()
         self.name = fake.name()
         print(f'Имя игрока: {self.name}')
 
     def step(self, num):
+        """
+        Ход игрока
+        :param num: номер бочонка
+        :return: bool
+        """
         print(self.cart.out_print())
         if self.cart.is_num_to_cart(num):
             self.cart.cross_out(num)
@@ -90,6 +133,9 @@ class PlayerComp:
 
 
 class PlayerHuman:
+    """
+    Ход игрока с переопределением методов.
+    """
     def __init__(self):
         self.cart = Cart()
         self.name = input('Введите имя игрока: ')
@@ -115,13 +161,23 @@ class PlayerHuman:
 
 
 class Game:
+    """
+    Класс игры, свойство bag - мешок с бочонками
+    """
     bag = list(range(1, 100))
 
     def __init__(self):
+        """
+        Инициация игроков
+        """
         self.player1 = None
         self.player2 = None
 
     def menu(self):
+        """
+        Вывод меню и получение номера выбранного пункта.
+        :return: номер пункта
+        """
         mtext = """
         
         1. Один игрок с компьютером
@@ -137,6 +193,9 @@ class Game:
         return int(n)
 
     def start(self):
+        """
+        Процесс игры
+        """
         n = self.menu()
         if n == 1:
             self.player1 = PlayerHuman()
@@ -176,5 +235,6 @@ class Game:
 
 
 if __name__ == '__main__':
+    # запуск игры
     game = Game()
     game.start()
