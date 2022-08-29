@@ -172,6 +172,9 @@ class Game:
         """
         self.player1 = None
         self.player2 = None
+        self.exit = self.menu()
+        self.winner = None
+        self.loser = None
 
     def menu(self):
         """
@@ -179,62 +182,66 @@ class Game:
         :return: номер пункта
         """
         mtext = """
-        
+
         1. Один игрок с компьютером
         2. 2 игрока
         3. 2 Компьютера
         4. Выход
-        
+
         """
         print(mtext)
         n = input('Введите номер пункта: ')
         while n not in '1234':
             n = input('Некорректный ввод. Введите номер пункта: ')
-        return int(n)
-
-    def start(self):
-        """
-        Процесс игры
-        """
-        n = self.menu()
+        n = int(n)
         if n == 1:
             self.player1 = PlayerHuman()
             self.player2 = PlayerComp()
         elif n == 2:
             self.player1 = PlayerHuman()
             self.player2 = PlayerHuman()
-
         elif n == 3:
             self.player1 = PlayerComp()
             self.player2 = PlayerComp()
         else:
             print('Выбран выход')
-            return None
+            return True
+        return False
+
+    def start(self):
+        """
+        Процесс игры
+        """
+        step1, step2 = False, False
         num = sample(self.bag, k=1)
         print(f'Выпал бочонок: {num[0]}')
         self.bag.remove(num[0])
         while not (self.player1.cart.is_empty or self.player2.cart.is_empty):
             step1 = self.player1.step(num[0])
             step2 = self.player2.step(num[0])
-            if not step1 or not step2:
+            if not (step1 and step2 and len(self.bag)):
                 break
             num = sample(self.bag, k=1)
             print(f'Выпал бочонок: {num[0]}')
             self.bag.remove(num[0])
         if self.player1.cart.is_empty or not step1:
-            loser = self.player1
-            winner = self.player2
+            self.winner = self.player1.name
+            self.loser = self.player2.name
+        elif self.player2.cart.is_empty or not step2:
+            self.loser = self.player1.name
+            self.winner = self.player2.name
         else:
-            loser = self.player1
-            winner = self.player2
+            print('Все бочонки вынуты')
+            return
         print()
-        print("_"*40)
-        print(f"Победитель: {winner.name}")
-        print("_"*40)
-        print(f'{loser.name} сегодня не выиграл')
+        print("_" * 40)
+        print(f"Победитель: {self.winner}")
+        print("_" * 40)
+        print(f'{self.loser} сегодня не выиграл')
 
 
 if __name__ == '__main__':
     # запуск игры
     game = Game()
-    game.start()
+    if not game.exit:
+        game.start()
