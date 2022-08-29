@@ -17,7 +17,6 @@ def test_comp_step(fix3):
     human = PlayerComp()
     human.cart = fix3
     assert human.step(10), 'Error step'
-    print(human.cart.out_print())
     assert human.step(51) is True, 'OverTime'
 
 
